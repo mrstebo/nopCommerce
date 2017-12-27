@@ -4327,7 +4327,7 @@
     <Value>Currency code</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Currencies.Fields.CurrencyCode.Hint">
-    <Value>The currency code. For a list of currency codes, go to: http://www.iso.org/iso/support/currency_codes_list-1.htm.</Value>
+    <Value>The currency code. For a list of currency codes, go to: https://en.wikipedia.org/wiki/ISO_4217</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Currencies.Fields.CurrencyCode.Range">
     <Value>Currency code must be less than or equal to 5 characters.</Value>
@@ -5274,6 +5274,12 @@
   <LocaleResource Name="Admin.Configuration.Settings.Catalog.EmailAFriendEnabled.Hint">
     <Value>Check to allow customers to use the 'Email a friend' option in your store.</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.ExportImportAllowDownloadImages">
+    <Value>Export/Import products. Allow download images</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.ExportImportAllowDownloadImages.Hint">
+    <Value>Check if images can be downloaded from remote server when exporting products</Value>
+  </LocaleResource>   
   <LocaleResource Name="Admin.Configuration.Settings.Catalog.ExportImportCategoriesUsingCategoryName">
     <Value>Export/Import categories using name of category</Value>
   </LocaleResource>
@@ -5530,7 +5536,7 @@
     <Value>Reviews per store</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Settings.Catalog.ShowProductReviewsPerStore.Hint">
-    <Value>Check to display reviews written in the current store only (on a product details page).</Value>
+    <Value>Check to display reviews written in the current store only (on a product details page and on the account product reviews page).</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Configuration.Settings.Catalog.ShowProductReviewsTabOnAccountPage">
     <Value>Show product reviews tab on 'My account' page</Value>
@@ -9369,6 +9375,12 @@
   <LocaleResource Name="Admin.ContentManagement.Topics.Info">
     <Value>Info</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.ContentManagement.Topics.List.SearchKeywords">
+    <Value>Search keywords</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.ContentManagement.Topics.List.SearchKeywords.Hint">
+    <Value>Search topic(s) by specific keywords.</Value>
+  </LocaleResource>
   <LocaleResource Name="Admin.ContentManagement.Topics.List.SearchStore">
     <Value>Store</Value>
   </LocaleResource>
@@ -9758,6 +9770,9 @@
   </LocaleResource>
   <LocaleResource Name="Admin.Customers.Customers.Fields.Affiliate.Remove">
     <Value>Remove affiliate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Customers.Customers.Fields.Avatar">
+    <Value>Avatar</Value>
   </LocaleResource>
   <LocaleResource Name="Admin.Customers.Customers.Fields.City">
     <Value>City</Value>

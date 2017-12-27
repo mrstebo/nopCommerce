@@ -1115,9 +1115,10 @@ namespace Nop.Services.Catalog
         /// <param name="vendorId">Vendor identifier; 0 to load all records</param>
         /// <param name="pageIndex">Page index</param>
         /// <param name="pageSize">Page size</param>
+        /// <param name="getOnlyTotalCount">A value in indicating whether you want to load only total number of records. Set to "true" if you don't want to load data from database</param>
         /// <returns>Products</returns>
         public virtual IPagedList<Product> GetLowStockProducts(int vendorId = 0,
-            int pageIndex = 0, int pageSize = int.MaxValue)
+            int pageIndex = 0, int pageSize = int.MaxValue, bool getOnlyTotalCount = false)
         {
             //Track inventory for product
             var query = from p in _productRepository.Table
@@ -1133,7 +1134,7 @@ namespace Nop.Services.Catalog
                          (vendorId == 0 || p.VendorId == vendorId)
                          select p;
 
-            return new PagedList<Product>(query, pageIndex, pageSize);
+            return new PagedList<Product>(query, pageIndex, pageSize, getOnlyTotalCount);
         }
 
         /// <summary>
@@ -1142,9 +1143,10 @@ namespace Nop.Services.Catalog
         /// <param name="vendorId">Vendor identifier; 0 to load all records</param>
         /// <param name="pageIndex">Page index</param>
         /// <param name="pageSize">Page size</param>
+        /// <param name="getOnlyTotalCount">A value in indicating whether you want to load only total number of records. Set to "true" if you don't want to load data from database</param>
         /// <returns>Product combinations</returns>
         public virtual IPagedList<ProductAttributeCombination> GetLowStockProductCombinations(int vendorId = 0,
-            int pageIndex = 0, int pageSize = int.MaxValue)
+            int pageIndex = 0, int pageSize = int.MaxValue, bool getOnlyTotalCount = false)
         {
             //Track inventory for product by product attributes
             var query = from p in _productRepository.Table
@@ -1155,7 +1157,7 @@ namespace Nop.Services.Catalog
                          (vendorId == 0 || p.VendorId == vendorId)
                          select c;
             query = query.OrderBy(c => c.ProductId);
-            return new PagedList<ProductAttributeCombination>(query, pageIndex, pageSize);
+            return new PagedList<ProductAttributeCombination>(query, pageIndex, pageSize, getOnlyTotalCount);
         }
 
         /// <summary>
@@ -1943,12 +1945,13 @@ namespace Nop.Services.Catalog
         /// <param name="storeId">The store identifier; pass 0 to load all records</param>
         /// <param name="productId">The product identifier; pass 0 to load all records</param>
         /// <param name="vendorId">The vendor identifier (limit to products of this vendor); pass 0 to load all records</param>
+        /// <param name="showHidden">A value indicating whether to show hidden records</param>
         /// <param name="pageIndex">Page index</param>
         /// <param name="pageSize">Page size</param>
         /// <returns>Reviews</returns>
         public virtual IPagedList<ProductReview> GetAllProductReviews(int customerId, bool? approved,
             DateTime? fromUtc = null, DateTime? toUtc = null,
-            string message = null, int storeId = 0, int productId = 0, int vendorId = 0,
+            string message = null, int storeId = 0, int productId = 0, int vendorId = 0, bool showHidden = false,
             int pageIndex = 0, int pageSize = int.MaxValue)
         {
             var query = _productReviewRepository.Table;
@@ -1962,12 +1965,27 @@ namespace Nop.Services.Catalog
                 query = query.Where(pr => toUtc.Value >= pr.CreatedOnUtc);
             if (!string.IsNullOrEmpty(message))
                 query = query.Where(pr => pr.Title.Contains(message) || pr.ReviewText.Contains(message));
-            if (storeId > 0)
+            if (storeId > 0 && (showHidden || _catalogSettings.ShowProductReviewsPerStore))
                 query = query.Where(pr => pr.StoreId == storeId);
             if (productId > 0)
                 query = query.Where(pr => pr.ProductId == productId);
             if (vendorId > 0)
                 query = query.Where(pr => pr.Product.VendorId == vendorId);
+
+            //ignore deleted products
+            query = query.Where(pr => !pr.Product.Deleted);
+
+            //filter by limited to store products
+            if (storeId > 0 && !showHidden && !_catalogSettings.IgnoreStoreLimitations)
+            {
+                query = from productReview in query
+                        join storeMapping in _storeMappingRepository.Table
+                            on new { Id = productReview.ProductId, Name = nameof(Product) } 
+                            equals new { Id = storeMapping.EntityId, Name = storeMapping.EntityName } into storeMappingsWithNulls
+                        from storeMapping in storeMappingsWithNulls.DefaultIfEmpty()
+                        where !productReview.Product.LimitedToStores || storeMapping.StoreId == storeId
+                        select productReview;
+            }
 
             query = query.OrderBy(pr => pr.CreatedOnUtc).ThenBy(pr => pr.Id);
 
