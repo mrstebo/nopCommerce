@@ -26,6 +26,54 @@ set @resources='
   <LocaleResource Name="Admin.Configuration.Settings.Catalog.ShowProductReviewsPerStore.Hint">
     <Value>Check to display reviews written in the current store only (on a product details page and on the account product reviews page).</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.Catalog.ViewMode.Grid">
+    <Value>Grid</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Catalog.ViewMode.List">
+    <Value>List</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.DefaultViewMode">
+    <Value>Default view mode</Value>
+  </LocaleResource>    
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.DefaultViewMode.Hint">
+    <Value>Choose the default view mode for catalog pages.</Value>
+  </LocaleResource>     
+  <LocaleResource Name="Admin.Promotions.Discounts.List.SearchEndDate">
+    <Value>End date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Promotions.Discounts.List.SearchEndDate.Hint">
+    <Value>The end date for the search.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Promotions.Discounts.List.SearchStartDate">
+    <Value>Start date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Promotions.Discounts.List.SearchStartDate.Hint">
+    <Value>The start date for the search.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Security.UserRegistrationType.AdminApproval">
+    <Value></Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Security.UserRegistrationType.Disabled">
+    <Value></Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Security.UserRegistrationType.EmailValidation">
+    <Value></Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Security.UserRegistrationType.Standard">
+    <Value></Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Customers.UserRegistrationType.AdminApproval">
+    <Value>A customer should be approved by administrator</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Customers.UserRegistrationType.Disabled">
+    <Value>Registration is disabled</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Customers.UserRegistrationType.EmailValidation">
+    <Value>Email validation is required after registration</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Customers.UserRegistrationType.Standard">
+    <Value>Standard account creation</Value>
+  </LocaleResource>
 </Language>
 '
 

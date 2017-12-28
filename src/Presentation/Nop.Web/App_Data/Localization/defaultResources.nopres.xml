@@ -3909,6 +3909,12 @@
   <LocaleResource Name="Admin.Catalog.ProductTags.Fields.ProductCount">
     <Value>Tagged products</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.Catalog.ViewMode.Grid">
+    <Value>Grid</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Catalog.ViewMode.List">
+    <Value>List</Value>
+  </LocaleResource>
   <LocaleResource Name="Admin.Common.ActionConfirmation">
     <Value>Are you sure you want to perform this action?</Value>
   </LocaleResource>
@@ -5226,6 +5232,12 @@
   <LocaleResource Name="Admin.Configuration.Settings.Catalog.CompareProductsEnabled.Hint">
     <Value>Check to allow customers to use the 'Compare Products' option in your store.</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.DefaultViewMode">
+    <Value>Default view mode</Value>
+  </LocaleResource>    
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.DefaultViewMode.Hint">
+    <Value>Choose the default view mode for catalog pages.</Value>
+  </LocaleResource>    
   <LocaleResource Name="Admin.Configuration.Settings.Catalog.DisplayDiscontinuedMessageForUnpublishedProducts">
     <Value>Discontinued message for unpublished products</Value>
   </LocaleResource>
@@ -11898,6 +11910,18 @@
   <LocaleResource Name="Admin.Promotions.Discounts.List.SearchDiscountType.Hint">
     <Value>Search by discount type.</Value>
   </LocaleResource>
+  <LocaleResource Name="Admin.Promotions.Discounts.List.SearchEndDate">
+    <Value>End date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Promotions.Discounts.List.SearchEndDate.Hint">
+    <Value>The end date for the search.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Promotions.Discounts.List.SearchStartDate">
+    <Value>Start date</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Promotions.Discounts.List.SearchStartDate.Hint">
+    <Value>The start date for the search.</Value>
+  </LocaleResource>
   <LocaleResource Name="Admin.Promotions.Discounts.Requirements">
     <Value>Requirements</Value>
   </LocaleResource>
@@ -14133,6 +14157,18 @@
   <LocaleResource Name="Enums.Nop.Core.Domain.Customers.RewardPointsActivatingDelayPeriod.Hours">
     <Value>Hours</Value>
   </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Customers.UserRegistrationType.AdminApproval">
+    <Value>A customer should be approved by administrator</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Customers.UserRegistrationType.Disabled">
+    <Value>Registration is disabled</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Customers.UserRegistrationType.EmailValidation">
+    <Value>Email validation is required after registration</Value>
+  </LocaleResource>
+  <LocaleResource Name="Enums.Nop.Core.Domain.Customers.UserRegistrationType.Standard">
+    <Value>Standard account creation</Value>
+  </LocaleResource>
   <LocaleResource Name="Enums.Nop.Core.Domain.Directory.RoundingType.Rounding001">
     <Value>Default rounding</Value>
   </LocaleResource>
@@ -14303,18 +14339,6 @@
   </LocaleResource>
   <LocaleResource Name="Enums.Nop.Core.Domain.Security.PasswordFormat.Hashed">
     <Value>Hashed</Value>
-  </LocaleResource>
-  <LocaleResource Name="Enums.Nop.Core.Domain.Security.UserRegistrationType.AdminApproval">
-    <Value>A customer should be approved by administrator</Value>
-  </LocaleResource>
-  <LocaleResource Name="Enums.Nop.Core.Domain.Security.UserRegistrationType.Disabled">
-    <Value>Registration is disabled</Value>
-  </LocaleResource>
-  <LocaleResource Name="Enums.Nop.Core.Domain.Security.UserRegistrationType.EmailValidation">
-    <Value>Email validation is required after registration</Value>
-  </LocaleResource>
-  <LocaleResource Name="Enums.Nop.Core.Domain.Security.UserRegistrationType.Standard">
-    <Value>Standard account creation</Value>
   </LocaleResource>
   <LocaleResource Name="Enums.Nop.Core.Domain.Seo.PageTitleSeoAdjustment.PagenameAfterStorename">
     <Value>Page name comes after store name</Value>

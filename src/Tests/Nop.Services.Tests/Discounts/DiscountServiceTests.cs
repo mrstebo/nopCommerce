@@ -6,11 +6,11 @@ using Nop.Core.Caching;
 using Nop.Core.Data;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Discounts;
-using Nop.Core.Plugins;
 using Nop.Services.Catalog;
 using Nop.Services.Discounts;
 using Nop.Services.Events;
 using Nop.Services.Localization;
+using Nop.Services.Plugins;
 using Nop.Tests;
 using NUnit.Framework;
 using Rhino.Mocks;
@@ -70,7 +70,7 @@ namespace Nop.Services.Tests.Discounts
             _discountRequirementRepo.Expect(x => x.Table).Return(new List<DiscountRequirement>().AsQueryable());
 
             _discountUsageHistoryRepo = MockRepository.GenerateMock<IRepository<DiscountUsageHistory>>();
-            var pluginFinder = new PluginFinder();
+            var pluginFinder = new PluginFinder(_eventPublisher);
             _localizationService = MockRepository.GenerateMock<ILocalizationService>();
             _categoryService = MockRepository.GenerateMock<ICategoryService>();
             _discountService = new DiscountService(cacheManager, _discountRepo, _discountRequirementRepo,
@@ -81,7 +81,7 @@ namespace Nop.Services.Tests.Discounts
         [Test]
         public void Can_get_all_discount()
         {
-            var discounts = _discountService.GetAllDiscounts(null);
+            var discounts = _discountService.GetAllDiscounts();
             discounts.ShouldNotBeNull();
             (discounts.Any()).ShouldBeTrue();
         }
