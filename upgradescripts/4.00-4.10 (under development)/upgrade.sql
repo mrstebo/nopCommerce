@@ -95,6 +95,24 @@ set @resources='
   <LocaleResource Name="Admin.Catalog.LowStockReport.SearchPublished.UnpublishedOnly">
     <Value>Unpublished only</Value>
   </LocaleResource>
+  <LocaleResource Name="Products.Availability.SelectRequiredAttributes">
+    <Value>Please select required attribute(s)</Value>
+  </LocaleResource>
+  <LocaleResource Name="PDFInvoice.VendorName">
+    <Value>Vendor name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Order.Product(s).VendorName">
+    <Value>Vendor name</Value>
+  </LocaleResource> 
+  <LocaleResource Name="ShoppingCart.VendorName">
+    <Value>Vendor name</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.Vendor.ShowVendorOnOrderDetailsPage">
+    <Value>Show vendor name on order details page</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.Vendor.ShowVendorOnOrderDetailsPage.Hint">
+    <Value>Check to show vendor name of product on the order details page.</Value>
+  </LocaleResource>
 </Language>
 '
 
@@ -197,5 +215,13 @@ IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = object_id('[ActivityL
 BEGIN
 	ALTER TABLE [ActivityLog]
 	ADD [EntityName] NVARCHAR(400) NULL
+END
+GO
+
+--new setting
+IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [name] = N'vendorsettings.showvendoronorderdetailspage')
+BEGIN
+	INSERT [Setting] ([Name], [Value], [StoreId])
+	VALUES (N'vendorsettings.showvendoronorderdetailspage', N'false', 0)
 END
 GO
