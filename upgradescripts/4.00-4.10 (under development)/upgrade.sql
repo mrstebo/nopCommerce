@@ -161,6 +161,21 @@ set @resources='
   <LocaleResource Name="Admin.Catalog.Attributes.SpecificationAttributes.UsedByProducts.Published">
     <Value>Published</Value>
   </LocaleResource>   
+  <LocaleResource Name="Admin.Configuration.Stores.Fields.SecureUrl">
+    <Value></Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Stores.Fields.SecureUrl.Hint">
+    <Value></Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Stores.Fields.Url.Hint">
+    <Value>The URL of your store e.g. http://www.yourstore.com/ or https://www.yourstore.com/mystore/.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.ProductReviewsSortByCreatedDateAscending">
+	  <Value>Sort by ascending</Value>
+  </LocaleResource>  
+  <LocaleResource Name="Admin.Configuration.Settings.Catalog.ProductReviewsSortByCreatedDateAscending.Hint">
+	  <Value>Check if the product reviews should be sorted by creation date as ascending</Value>
+  </LocaleResource> 
 </Language>
 '
 
@@ -360,5 +375,20 @@ IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [name] = N'securitysettings.allowno
 BEGIN
 	INSERT [Setting] ([Name], [Value], [StoreId])
 	VALUES (N'securitysettings.allownonasciicharactersinheaders', N'true', 0)
+END
+GO
+
+--drop column
+IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = object_id('[Store]') AND NAME='SecureUrl')
+BEGIN
+	ALTER TABLE [Store] DROP COLUMN [SecureUrl]
+END
+GO
+
+--new setting
+IF NOT EXISTS (SELECT 1 FROM [Setting] WHERE [name] = N'catalogsettings.productreviewssortbycreateddateascending')
+BEGIN
+	INSERT [Setting] ([Name], [Value], [StoreId])
+	VALUES (N'catalogsettings.productreviewssortbycreateddateascending', N'true', 0)
 END
 GO
