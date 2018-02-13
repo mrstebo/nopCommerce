@@ -17,7 +17,7 @@
 
 @if (Model.CountryEnabled && Model.StateProvinceEnabled)
 {
-    <script type="text/javascript" asp-location="Footer">
+    <script asp-location="Footer">
         $(document).ready(function () {
             $("#@Html.IdFor(model => model.CountryId)").change(function () {
                 var selectedItem = $(this).val();
@@ -99,6 +99,7 @@
                                 asp-selected-day="@Model.DateOfBirthDay"
                                 asp-selected-month="@Model.DateOfBirthMonth"
                                 asp-selected-year="@Model.DateOfBirthYear"
+                                asp-localize-labels="true"
                             />
                             @if (Model.DateOfBirthRequired)
                             {
@@ -187,6 +188,7 @@
                     Model.StreetAddress2Enabled ||
                     Model.ZipPostalCodeEnabled ||
                     Model.CityEnabled ||
+                    Model.CountyEnabled ||
                     Model.CountryEnabled)
             {
                 <div class="fieldset">
@@ -240,6 +242,18 @@
                                     <nop-required />
                                 }
                                 <span asp-validation-for="City"></span>
+                            </div>
+                        }
+                        @if (Model.CountyEnabled)
+                        {
+                            <div class="inputs">
+                                <label asp-for="County" asp-postfix=":"></label>
+                                <input asp-for="County" />
+                                @if (Model.CountyRequired)
+                                {
+                                    <nop-required />
+                                }
+                                <span asp-validation-for="County"></span>
                             </div>
                         }
                         @if (Model.CountryEnabled)
@@ -430,7 +444,7 @@
     </div>
 </div>
 
-<script type="text/javascript" asp-location="Footer">
+<script asp-location="Footer">
     function removeexternalassociation(itemId) {
         if (confirm('@T("Common.AreYouSure")')) {
             var postData = {

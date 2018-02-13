@@ -561,6 +561,7 @@ namespace Nop.Web.Areas.Admin.Controllers
                     model.StreetAddress2 = customer.GetAttribute<string>(SystemCustomerAttributeNames.StreetAddress2);
                     model.ZipPostalCode = customer.GetAttribute<string>(SystemCustomerAttributeNames.ZipPostalCode);
                     model.City = customer.GetAttribute<string>(SystemCustomerAttributeNames.City);
+                    model.County = customer.GetAttribute<string>(SystemCustomerAttributeNames.County);
                     model.CountryId = customer.GetAttribute<int>(SystemCustomerAttributeNames.CountryId);
                     model.StateProvinceId = customer.GetAttribute<int>(SystemCustomerAttributeNames.StateProvinceId);
                     model.Phone = customer.GetAttribute<string>(SystemCustomerAttributeNames.Phone);
@@ -593,6 +594,7 @@ namespace Nop.Web.Areas.Admin.Controllers
             model.StreetAddress2Enabled = _customerSettings.StreetAddress2Enabled;
             model.ZipPostalCodeEnabled = _customerSettings.ZipPostalCodeEnabled;
             model.CityEnabled = _customerSettings.CityEnabled;
+            model.CountyEnabled = _customerSettings.CountyEnabled;
             model.CountryEnabled = _customerSettings.CountryEnabled;
             model.StateProvinceEnabled = _customerSettings.StateProvinceEnabled;
             model.PhoneEnabled = _customerSettings.PhoneEnabled;
@@ -704,6 +706,9 @@ namespace Nop.Web.Areas.Admin.Controllers
                 customer != null &&
                 customer.IsRegistered() &&
                 !customer.Active;
+
+            model.ShoppingCartTypeModel.ShoppingCartType = ShoppingCartType.ShoppingCart;
+            model.ShoppingCartTypeModel.AvailableShoppingCartTypes = ShoppingCartType.ShoppingCart.ToSelectList().ToList();
         }
 
         protected virtual void PrepareAddressModel(CustomerAddressModel model, Address address, Customer customer, bool excludeProperties)
@@ -736,6 +741,8 @@ namespace Nop.Web.Areas.Admin.Controllers
             model.Address.StateProvinceEnabled = _addressSettings.StateProvinceEnabled;
             model.Address.CityEnabled = _addressSettings.CityEnabled;
             model.Address.CityRequired = _addressSettings.CityRequired;
+            model.Address.CountyEnabled = _addressSettings.CountyEnabled;
+            model.Address.CountyRequired = _addressSettings.CountyRequired;
             model.Address.StreetAddressEnabled = _addressSettings.StreetAddressEnabled;
             model.Address.StreetAddressRequired = _addressSettings.StreetAddressRequired;
             model.Address.StreetAddress2Enabled = _addressSettings.StreetAddress2Enabled;
@@ -947,6 +954,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                     _genericAttributeService.SaveAttribute(customer, SystemCustomerAttributeNames.ZipPostalCode, model.ZipPostalCode);
                 if (_customerSettings.CityEnabled)
                     _genericAttributeService.SaveAttribute(customer, SystemCustomerAttributeNames.City, model.City);
+                if (_customerSettings.CountyEnabled)
+                    _genericAttributeService.SaveAttribute(customer, SystemCustomerAttributeNames.County, model.County);
                 if (_customerSettings.CountryEnabled)
                     _genericAttributeService.SaveAttribute(customer, SystemCustomerAttributeNames.CountryId, model.CountryId);
                 if (_customerSettings.CountryEnabled && _customerSettings.StateProvinceEnabled)
@@ -1201,6 +1210,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                         _genericAttributeService.SaveAttribute(customer, SystemCustomerAttributeNames.ZipPostalCode, model.ZipPostalCode);
                     if (_customerSettings.CityEnabled)
                         _genericAttributeService.SaveAttribute(customer, SystemCustomerAttributeNames.City, model.City);
+                    if (_customerSettings.CountyEnabled)
+                        _genericAttributeService.SaveAttribute(customer, SystemCustomerAttributeNames.County, model.County);
                     if (_customerSettings.CountryEnabled)
                         _genericAttributeService.SaveAttribute(customer, SystemCustomerAttributeNames.CountryId, model.CountryId);
                     if (_customerSettings.CountryEnabled && _customerSettings.StateProvinceEnabled)
@@ -1722,6 +1733,8 @@ namespace Nop.Web.Areas.Admin.Controllers
                         addressHtmlSb.AppendFormat("{0}<br />", WebUtility.HtmlEncode(model.Address2));
                     if (_addressSettings.CityEnabled && !string.IsNullOrEmpty(model.City))
                         addressHtmlSb.AppendFormat("{0},", WebUtility.HtmlEncode(model.City));
+                    if (_addressSettings.CountyEnabled && !string.IsNullOrEmpty(model.County))
+                        addressHtmlSb.AppendFormat("{0},", WebUtility.HtmlEncode(model.County));
                     if (_addressSettings.StateProvinceEnabled && !string.IsNullOrEmpty(model.StateProvinceName))
                         addressHtmlSb.AppendFormat("{0},", WebUtility.HtmlEncode(model.StateProvinceName));
                     if (_addressSettings.ZipPostalCodeEnabled && !string.IsNullOrEmpty(model.ZipPostalCode))
@@ -2076,23 +2089,20 @@ namespace Nop.Web.Areas.Admin.Controllers
                     //year statistics
                     var yearAgoDt = nowDt.AddYears(-1).AddMonths(1);
                     var searchYearDateUser = new DateTime(yearAgoDt.Year, yearAgoDt.Month, 1);
-                    if (!timeZone.IsInvalidTime(searchYearDateUser))
+                    for (var i = 0; i <= 12; i++)
                     {
-                        for (var i = 0; i <= 12; i++)
+                        result.Add(new
                         {
-                            result.Add(new
-                            {
-                                date = searchYearDateUser.Date.ToString("Y", culture),
-                                value = _customerService.GetAllCustomers(
-                                    createdFromUtc: _dateTimeHelper.ConvertToUtcTime(searchYearDateUser, timeZone),
-                                    createdToUtc: _dateTimeHelper.ConvertToUtcTime(searchYearDateUser.AddMonths(1), timeZone),
-                                    customerRoleIds: searchCustomerRoleIds,
-                                    pageIndex: 0,
-                                    pageSize: 1, getOnlyTotalCount: true).TotalCount.ToString()
-                            });
+                            date = searchYearDateUser.Date.ToString("Y", culture),
+                            value = _customerService.GetAllCustomers(
+                                createdFromUtc: _dateTimeHelper.ConvertToUtcTime(searchYearDateUser, timeZone),
+                                createdToUtc: _dateTimeHelper.ConvertToUtcTime(searchYearDateUser.AddMonths(1), timeZone),
+                                customerRoleIds: searchCustomerRoleIds,
+                                pageIndex: 0,
+                                pageSize: 1, getOnlyTotalCount: true).TotalCount.ToString()
+                        });
 
-                            searchYearDateUser = searchYearDateUser.AddMonths(1);
-                        }
+                        searchYearDateUser = searchYearDateUser.AddMonths(1);
                     }
                     break;
 
@@ -2100,23 +2110,20 @@ namespace Nop.Web.Areas.Admin.Controllers
                     //month statistics
                     var monthAgoDt = nowDt.AddDays(-30);
                     var searchMonthDateUser = new DateTime(monthAgoDt.Year, monthAgoDt.Month, monthAgoDt.Day);
-                    if (!timeZone.IsInvalidTime(searchMonthDateUser))
+                    for (var i = 0; i <= 30; i++)
                     {
-                        for (var i = 0; i <= 30; i++)
+                        result.Add(new
                         {
-                            result.Add(new
-                            {
-                                date = searchMonthDateUser.Date.ToString("M", culture),
-                                value = _customerService.GetAllCustomers(
-                                    createdFromUtc: _dateTimeHelper.ConvertToUtcTime(searchMonthDateUser, timeZone),
-                                    createdToUtc: _dateTimeHelper.ConvertToUtcTime(searchMonthDateUser.AddDays(1), timeZone),
-                                    customerRoleIds: searchCustomerRoleIds,
-                                    pageIndex: 0,
-                                    pageSize: 1, getOnlyTotalCount: true).TotalCount.ToString()
-                            });
+                            date = searchMonthDateUser.Date.ToString("M", culture),
+                            value = _customerService.GetAllCustomers(
+                                createdFromUtc: _dateTimeHelper.ConvertToUtcTime(searchMonthDateUser, timeZone),
+                                createdToUtc: _dateTimeHelper.ConvertToUtcTime(searchMonthDateUser.AddDays(1), timeZone),
+                                customerRoleIds: searchCustomerRoleIds,
+                                pageIndex: 0,
+                                pageSize: 1, getOnlyTotalCount: true).TotalCount.ToString()
+                        });
 
-                            searchMonthDateUser = searchMonthDateUser.AddDays(1);
-                        }
+                        searchMonthDateUser = searchMonthDateUser.AddDays(1);
                     }
                     break;
                 case "week":
@@ -2124,23 +2131,20 @@ namespace Nop.Web.Areas.Admin.Controllers
                     //week statistics
                     var weekAgoDt = nowDt.AddDays(-7);
                     var searchWeekDateUser = new DateTime(weekAgoDt.Year, weekAgoDt.Month, weekAgoDt.Day);
-                    if (!timeZone.IsInvalidTime(searchWeekDateUser))
+                    for (var i = 0; i <= 7; i++)
                     {
-                        for (var i = 0; i <= 7; i++)
+                        result.Add(new
                         {
-                            result.Add(new
-                            {
-                                date = searchWeekDateUser.Date.ToString("d dddd", culture),
-                                value = _customerService.GetAllCustomers(
-                                    createdFromUtc: _dateTimeHelper.ConvertToUtcTime(searchWeekDateUser, timeZone),
-                                    createdToUtc: _dateTimeHelper.ConvertToUtcTime(searchWeekDateUser.AddDays(1), timeZone),
-                                    customerRoleIds: searchCustomerRoleIds,
-                                    pageIndex: 0,
-                                    pageSize: 1, getOnlyTotalCount: true).TotalCount.ToString()
-                            });
+                            date = searchWeekDateUser.Date.ToString("d dddd", culture),
+                            value = _customerService.GetAllCustomers(
+                                createdFromUtc: _dateTimeHelper.ConvertToUtcTime(searchWeekDateUser, timeZone),
+                                createdToUtc: _dateTimeHelper.ConvertToUtcTime(searchWeekDateUser.AddDays(1), timeZone),
+                                customerRoleIds: searchCustomerRoleIds,
+                                pageIndex: 0,
+                                pageSize: 1, getOnlyTotalCount: true).TotalCount.ToString()
+                        });
 
-                            searchWeekDateUser = searchWeekDateUser.AddDays(1);
-                        }
+                        searchWeekDateUser = searchWeekDateUser.AddDays(1);
                     }
                     break;
             }
@@ -2153,13 +2157,13 @@ namespace Nop.Web.Areas.Admin.Controllers
         #region Current shopping cart/ wishlist
 
         [HttpPost]
-        public virtual IActionResult GetCartList(int customerId, int cartTypeId)
+        public virtual IActionResult GetCartList(int customerId, ShoppingCartTypeModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
                 return AccessDeniedKendoGridJson();
 
             var customer = _customerService.GetCustomerById(customerId);
-            var cart = customer.ShoppingCartItems.Where(x => x.ShoppingCartTypeId == cartTypeId).ToList();
+            var cart = customer.ShoppingCartItems.Where(x => x.ShoppingCartTypeId == (int)model.ShoppingCartType).ToList();
 
             var gridModel = new DataSourceResult
             {

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using FluentValidation.Attributes;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Nop.Core.Domain.Catalog;
+using Nop.Web.Areas.Admin.Models.ShoppingCart;
 using Nop.Web.Areas.Admin.Validators.Customers;
 using Nop.Web.Framework.Mvc.ModelBinding;
 using Nop.Web.Framework.Mvc.Models;
@@ -29,6 +30,8 @@ namespace Nop.Web.Areas.Admin.Models.Customers
             this.CustomerAttributes = new List<CustomerAttributeModel>();
             this.AvailableNewsletterSubscriptionStores = new List<StoreModel>();
             this.RewardPointsAvailableStores = new List<SelectListItem>();
+
+            this.ShoppingCartTypeModel = new ShoppingCartTypeModel();
         }
 
         public bool UsernamesEnabled { get; set; }
@@ -85,6 +88,10 @@ namespace Nop.Web.Areas.Admin.Models.Customers
         public bool CityEnabled { get; set; }
         [NopResourceDisplayName("Admin.Customers.Customers.Fields.City")]
         public string City { get; set; }
+
+        public bool CountyEnabled { get; set; }
+        [NopResourceDisplayName("Admin.Customers.Customers.Fields.County")]
+        public string County { get; set; }
 
         public bool CountryEnabled { get; set; }
         [NopResourceDisplayName("Admin.Customers.Customers.Fields.Country")]
@@ -191,6 +198,8 @@ namespace Nop.Web.Areas.Admin.Models.Customers
         public IList<AssociatedExternalAuthModel> AssociatedExternalAuthRecords { get; set; }
 
         public string AvatarUrl { get; internal set; }
+
+        public ShoppingCartTypeModel ShoppingCartTypeModel { get; set; }
 
         #region Nested classes
 

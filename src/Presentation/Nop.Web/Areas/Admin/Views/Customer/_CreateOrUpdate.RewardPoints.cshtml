@@ -9,12 +9,12 @@
 }
 
 <div class="panel-group">
-    @await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_customer_details_reward_points_top", additionalData = Model })
+    @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.CustomerDetailsRewardPointsTop, additionalData = Model })
     <div class="panel panel-default">
         <div class="panel-body">
             <div id="customer-rewardpoints-grid"></div>
 
-            <script type="text/javascript">
+            <script>
                 $(document).ready(function() {
                     $("#customer-rewardpoints-grid").kendoGrid({
                         dataSource: {
@@ -117,7 +117,7 @@
                 </div>
             </div>
         </div>
-        <script type="text/javascript">
+        <script>
             $(document).ready(function () {
                 $('#addRewardPoints').click(function () {
                     var rewardPointsValue = $("#@Html.IdFor(model => model.AddRewardPointsValue)").val();
@@ -152,5 +152,5 @@
             });
         </script>
     </div>
-    @await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_customer_details_reward_points_bottom", additionalData = Model })
+    @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.CustomerDetailsRewardPointsBottom, additionalData = Model })
 </div>

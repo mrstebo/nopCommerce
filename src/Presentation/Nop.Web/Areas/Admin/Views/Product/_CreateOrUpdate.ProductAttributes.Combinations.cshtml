@@ -1,6 +1,6 @@
-﻿@model ProductModel
+@model ProductModel
 
-@await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_product_details_product_attributes_combinations_top", additionalData = Model })
+@await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductDetailsProductAttributesCombinationsTop, additionalData = Model })
 <div class="panel panel-default">
     <div class="panel-body">
         <p>
@@ -9,7 +9,7 @@
 
         <div id="attributecombinations-grid"></div>
 
-        <script type="text/javascript">
+        <script>
             $(document).ready(function() {
                 $("#attributecombinations-grid").kendoGrid({
                     dataSource: {
@@ -150,7 +150,7 @@
             @T("Admin.Catalog.Products.ProductAttributes.AttributeCombinations.GenerateAll")
         </button>
         <input type="submit" id="btnRefreshCombinations" style="display: none"/>
-        <script type="text/javascript">
+        <script>
             $(document).ready(function() {
                 $('#btnRefreshCombinations').click(function() {
                     //refresh grid
@@ -192,4 +192,4 @@
         </script>
     </div>
 </div>
-@await Component.InvokeAsync("AdminWidget", new { widgetZone = "admin_product_details_product_attributes_combinations_bottom", additionalData = Model })
+@await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductDetailsProductAttributesCombinationsBottom, additionalData = Model })
