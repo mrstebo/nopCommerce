@@ -2854,6 +2854,9 @@ label, label + * {
 .date-of-birth select + select {
 	margin: 0 10px 0 0;
 }
+.date-of-birth .select-wrapper + .select-wrapper {
+	margin: 0 10px 0 0;
+}
 #check-availability-button {
 	margin: 10px 0 0;
 	border: none;
@@ -2866,16 +2869,16 @@ label, label + * {
 #check-availability-button:hover {
 	background-color: #999;
 }
-.accept-privacy-policy {
+.accept-consent {
 	margin: 0 0 20px;
 	text-align: center;
 }
-.accept-privacy-policy > * {
+.accept-consent > * {
 	display: inline-block;
 	line-height: 32px;
 }
-.accept-privacy-policy span,
-.accept-privacy-policy a {
+.accept-consent span,
+.accept-consent a {
 	color: #4ab2f1;
 	cursor: pointer;
 }
@@ -3055,6 +3058,15 @@ label, label + * {
 }
 .account-page .table-wrapper {
 	margin: 0 0 30px
+}
+
+.gdpr-tools-page .result {
+    margin: 20px 0;
+    font-size: 13px;
+    color: #e4434b;
+}
+.gdpr-tools-page .buttons {
+    margin-top: 20px;
 }
 
 .address-list-page .info,
@@ -3443,6 +3455,14 @@ label, label + * {
 
 .cart-footer .checkout-buttons {
 	padding: 0 10px;
+}
+.cart-footer .checkout-disabled {
+    font-size: 20px;
+    text-align: center;
+    background: #ffa500;
+    border: 1px solid #c3891e;
+    color: #fff;
+    padding: 15px 50px;
 }
 .cart-footer .checkout-button {
 	display: inline-block;
