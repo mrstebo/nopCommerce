@@ -18,10 +18,6 @@ namespace Nop.Core.Http
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="next">Next</param>
         public KeepAliveMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -45,7 +41,7 @@ namespace Nop.Core.Http
             if (!DataSettingsManager.DatabaseIsInstalled)
             {
                 //keep alive page requested (we ignore it to prevent creating a guest customer records)
-                var keepAliveUrl = $"{webHelper.GetStoreLocation()}keepalive/index";
+                var keepAliveUrl = $"{webHelper.GetStoreLocation()}{NopHttpDefaults.KeepAlivePath}";
                 if (webHelper.GetThisPageUrl(false).StartsWith(keepAliveUrl, StringComparison.InvariantCultureIgnoreCase))
                     return;
             }
@@ -53,7 +49,7 @@ namespace Nop.Core.Http
             //or call the next middleware in the request pipeline
             await _next(context);
         }
-        
+
         #endregion
     }
 }

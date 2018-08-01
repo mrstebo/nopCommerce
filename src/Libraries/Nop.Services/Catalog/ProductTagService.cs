@@ -15,78 +15,42 @@ namespace Nop.Services.Catalog
     /// </summary>
     public partial class ProductTagService : IProductTagService
     {
-        #region Constants
-
-        /// <summary>
-        /// Key for caching
-        /// </summary>
-        /// <remarks>
-        /// {0} : store ID
-        /// </remarks>
-        private const string PRODUCTTAG_COUNT_KEY = "Nop.producttag.count-{0}";
-
-        /// <summary>
-        /// Key for caching
-        /// </summary>
-        /// <remarks>
-        /// {0} : product ID
-        /// </remarks>
-        private const string PRODUCTTAG_ALLBYPRODUCTID_KEY = "Nop.producttag.allbyproductid-{0}";
-
-        /// <summary>
-        /// Key pattern to clear cache
-        /// </summary>
-        private const string PRODUCTTAG_PATTERN_KEY = "Nop.producttag.";
-
-        #endregion
-
         #region Fields
 
-        private readonly IRepository<ProductTag> _productTagRepository;
-        private readonly IRepository<ProductProductTagMapping> _productProductTagMappingRepository;
-        private readonly IDbContext _dbContext;
         private readonly ICacheManager _cacheManager;
-        private readonly IStaticCacheManager _staticCacheManager;
+        private readonly IDbContext _dbContext;
         private readonly IEventPublisher _eventPublisher;
         private readonly IProductService _productService;
+        private readonly IRepository<ProductProductTagMapping> _productProductTagMappingRepository;
+        private readonly IRepository<ProductTag> _productTagRepository;
+        private readonly IStaticCacheManager _staticCacheManager;
         private readonly IUrlRecordService _urlRecordService;
 
         #endregion
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="productTagRepository">Product tag repository</param>
-        /// <param name="productProductTagMappingRepository">Product - product tag repository</param>
-        /// <param name="dbContext">Database Context</param>
-        /// <param name="cacheManager">Cache manager</param>
-        /// <param name="staticCacheManager">Static cache manager</param>
-        /// <param name="eventPublisher">Event publisher</param>
-        /// <param name="productService">Product service</param>
-        /// <param name="urlRecordService">Url record service</param>
-        public ProductTagService(IRepository<ProductTag> productTagRepository,
-            IRepository<ProductProductTagMapping> productProductTagMappingRepository,
+        public ProductTagService(ICacheManager cacheManager,
             IDbContext dbContext,
-            ICacheManager cacheManager,
-            IStaticCacheManager staticCacheManager,
             IEventPublisher eventPublisher,
             IProductService productService,
+            IRepository<ProductProductTagMapping> productProductTagMappingRepository,
+            IRepository<ProductTag> productTagRepository,
+            IStaticCacheManager staticCacheManager,
             IUrlRecordService urlRecordService)
         {
-            this._productTagRepository = productTagRepository;
-            this._productProductTagMappingRepository = productProductTagMappingRepository;
-            this._dbContext = dbContext;
             this._cacheManager = cacheManager;
-            this._staticCacheManager = staticCacheManager;
+            this._dbContext = dbContext;
             this._eventPublisher = eventPublisher;
             this._productService = productService;
+            this._productProductTagMappingRepository = productProductTagMappingRepository;
+            this._productTagRepository = productTagRepository;
+            this._staticCacheManager = staticCacheManager;
             this._urlRecordService = urlRecordService;
         }
 
         #endregion
-        
+
         #region Utilities
 
         /// <summary>
@@ -96,12 +60,11 @@ namespace Nop.Services.Catalog
         /// <returns>Dictionary of "product tag ID : product count"</returns>
         private Dictionary<int, int> GetProductCount(int storeId)
         {
-            var key = string.Format(PRODUCTTAG_COUNT_KEY, storeId);
+            var key = string.Format(NopCatalogDefaults.ProductTagCountCacheKey, storeId);
             return _staticCacheManager.Get(key, () =>
             {
                 return _dbContext.QueryFromSql<ProductTagWithCount>($"Exec ProductTagCountLoadAll {storeId}")
                     .ToDictionary(item => item.ProductTagId, item => item.ProductCount);
-                
             });
         }
 
@@ -121,8 +84,8 @@ namespace Nop.Services.Catalog
             _productTagRepository.Delete(productTag);
 
             //cache
-            _cacheManager.RemoveByPattern(PRODUCTTAG_PATTERN_KEY);
-            _staticCacheManager.RemoveByPattern(PRODUCTTAG_PATTERN_KEY);
+            _cacheManager.RemoveByPattern(NopCatalogDefaults.ProductTagPatternCacheKey);
+            _staticCacheManager.RemoveByPattern(NopCatalogDefaults.ProductTagPatternCacheKey);
 
             //event notification
             _eventPublisher.EntityDeleted(productTag);
@@ -146,14 +109,14 @@ namespace Nop.Services.Catalog
         /// <returns>Product tags</returns>
         public virtual IList<ProductTag> GetAllProductTagsByProductId(int productId)
         {
-            var key = string.Format(PRODUCTTAG_ALLBYPRODUCTID_KEY, productId);
+            var key = string.Format(NopCatalogDefaults.ProductTagAllByProductIdCacheKey, productId);
             return _cacheManager.Get(key, () =>
             {
                 var query = from pt in _productTagRepository.Table
-                    join ppt in _productProductTagMappingRepository.Table on pt.Id equals ppt.ProductTagId
-                    where ppt.ProductId == productId
-                    orderby pt.Id
-                    select pt;
+                            join ppt in _productProductTagMappingRepository.Table on pt.Id equals ppt.ProductTagId
+                            where ppt.ProductId == productId
+                            orderby pt.Id
+                            select pt;
 
                 var productTags = query.ToList();
                 return productTags;
@@ -187,7 +150,7 @@ namespace Nop.Services.Catalog
             var productTag = query.FirstOrDefault();
             return productTag;
         }
-        
+
         /// <summary>
         /// Inserts a product tag
         /// </summary>
@@ -200,8 +163,8 @@ namespace Nop.Services.Catalog
             _productTagRepository.Insert(productTag);
 
             //cache
-            _cacheManager.RemoveByPattern(PRODUCTTAG_PATTERN_KEY);
-            _staticCacheManager.RemoveByPattern(PRODUCTTAG_PATTERN_KEY);
+            _cacheManager.RemoveByPattern(NopCatalogDefaults.ProductTagPatternCacheKey);
+            _staticCacheManager.RemoveByPattern(NopCatalogDefaults.ProductTagPatternCacheKey);
 
             //event notification
             _eventPublisher.EntityInserted(productTag);
@@ -218,12 +181,12 @@ namespace Nop.Services.Catalog
 
             _productTagRepository.Update(productTag);
 
-            var seName = productTag.ValidateSeName("", productTag.Name, true);
+            var seName = _urlRecordService.ValidateSeName(productTag, string.Empty, productTag.Name, true);
             _urlRecordService.SaveSlug(productTag, seName, 0);
 
             //cache
-            _cacheManager.RemoveByPattern(PRODUCTTAG_PATTERN_KEY);
-            _staticCacheManager.RemoveByPattern(PRODUCTTAG_PATTERN_KEY);
+            _cacheManager.RemoveByPattern(NopCatalogDefaults.ProductTagPatternCacheKey);
+            _staticCacheManager.RemoveByPattern(NopCatalogDefaults.ProductTagPatternCacheKey);
 
             //event notification
             _eventPublisher.EntityUpdated(productTag);
@@ -240,7 +203,7 @@ namespace Nop.Services.Catalog
             var dictionary = GetProductCount(storeId);
             if (dictionary.ContainsKey(productTagId))
                 return dictionary[productTagId];
-            
+
             return 0;
         }
 
@@ -262,17 +225,19 @@ namespace Nop.Services.Catalog
                 var found = false;
                 foreach (var newProductTag in productTags)
                 {
-                    if (existingProductTag.Name.Equals(newProductTag, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        found = true;
-                        break;
-                    }
+                    if (!existingProductTag.Name.Equals(newProductTag, StringComparison.InvariantCultureIgnoreCase))
+                        continue;
+
+                    found = true;
+                    break;
                 }
+
                 if (!found)
                 {
                     productTagsToRemove.Add(existingProductTag);
                 }
             }
+
             foreach (var productTag in productTagsToRemove)
             {
                 //product.ProductTags.Remove(productTag);
@@ -280,6 +245,7 @@ namespace Nop.Services.Catalog
                     .Remove(product.ProductProductTagMappings.FirstOrDefault(mapping => mapping.ProductTagId == productTag.Id));
                 _productService.UpdateProduct(product);
             }
+
             foreach (var productTagName in productTags)
             {
                 ProductTag productTag;
@@ -297,16 +263,16 @@ namespace Nop.Services.Catalog
                 {
                     productTag = productTag2;
                 }
-                if (!product.ProductTagExists(productTag.Id))
+
+                if (!_productService.ProductTagExists(product, productTag.Id))
                 {
                     //product.ProductTags.Add(productTag);
                     product.ProductProductTagMappings.Add(new ProductProductTagMapping { ProductTag = productTag });
                     _productService.UpdateProduct(product);
                 }
 
-                var seName = productTag.ValidateSeName("", productTag.Name, true);
+                var seName = _urlRecordService.ValidateSeName(productTag, string.Empty, productTag.Name, true);
                 _urlRecordService.SaveSlug(productTag, seName, 0);
-
             }
         }
 

@@ -15,11 +15,9 @@ namespace Nop.Core.Domain.Customers
         private ICollection<CustomerCustomerRoleMapping> _customerCustomerRoleMappings;
         private ICollection<ShoppingCartItem> _shoppingCartItems;
         private ICollection<ReturnRequest> _returnRequests;
-        private ICollection<CustomerAddressMapping> _customerAddressMappings;
-        
-        /// <summary>
-        /// Ctor
-        /// </summary>
+        protected ICollection<CustomerAddressMapping> _customerAddressMappings;
+        private IList<CustomerRole> _customerRoles;
+
         public Customer()
         {
             this.CustomerGuid = Guid.NewGuid();
@@ -157,9 +155,12 @@ namespace Nop.Core.Domain.Customers
         }
 
         /// <summary>
-        /// Gets or sets the customer roles
+        /// Gets or sets customer roles
         /// </summary>
-        public IList<CustomerRole> CustomerRoles => CustomerCustomerRoleMappings.Select(mapping => mapping.CustomerRole).ToList();
+        public virtual IList<CustomerRole> CustomerRoles
+        {
+            get => _customerRoles ?? (_customerRoles = CustomerCustomerRoleMappings.Select(mapping => mapping.CustomerRole).ToList());
+        }
 
         /// <summary>
         /// Gets or sets customer-customer role mappings

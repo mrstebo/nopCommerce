@@ -3,9 +3,9 @@ using System.Linq;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
@@ -15,6 +15,7 @@ using Nop.Core.Configuration;
 using Nop.Core.Data;
 using Nop.Core.Domain;
 using Nop.Core.Domain.Security;
+using Nop.Core.Http;
 using Nop.Core.Infrastructure;
 using Nop.Core.Plugins;
 using Nop.Data;
@@ -40,9 +41,9 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
         /// Add services to the application and configure service provider
         /// </summary>
         /// <param name="services">Collection of service descriptors</param>
-        /// <param name="configuration">Configuration root of the application</param>
+        /// <param name="configuration">Configuration of the application</param>
         /// <returns>Configured service provider</returns>
-        public static IServiceProvider ConfigureApplicationServices(this IServiceCollection services, IConfigurationRoot configuration)
+        public static IServiceProvider ConfigureApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             //add NopConfig configuration parameters
             services.ConfigureStartupConfig<NopConfig>(configuration.GetSection("Nop"));
@@ -115,7 +116,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
             //override cookie name
             services.AddAntiforgery(options =>
             {
-                options.Cookie.Name = ".Nop.Antiforgery";
+                options.Cookie.Name = $"{NopCookieDefaults.Prefix}{NopCookieDefaults.AntiforgeryCookie}";
 
                 //whether to allow the use of anti-forgery cookies from SSL protected page on the other store pages which are not
                 options.Cookie.SecurePolicy = DataSettingsManager.DatabaseIsInstalled && EngineContext.Current.Resolve<SecuritySettings>().ForceSslForAllPages
@@ -131,7 +132,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
         {
             services.AddSession(options =>
             {
-                options.Cookie.Name = ".Nop.Session";
+                options.Cookie.Name = $"{NopCookieDefaults.Prefix}{NopCookieDefaults.SessionCookie}";
                 options.Cookie.HttpOnly = true;
 
                 //whether to allow the use of session values from SSL protected page on the other store pages which are not
@@ -171,7 +172,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
                 {
                     var redisConnectionWrapper = EngineContext.Current.Resolve<IRedisConnectionWrapper>();
                     return redisConnectionWrapper.GetDatabase();
-                }, RedisConfiguration.DataProtectionKeysName);
+                }, NopCachingDefaults.RedisDataProtectionKey);
             }
             else
             {
@@ -192,17 +193,17 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
             //set default authentication schemes
             var authenticationBuilder = services.AddAuthentication(options =>
             {
-                options.DefaultScheme = NopCookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultSignInScheme = NopCookieAuthenticationDefaults.ExternalAuthenticationScheme;
+                options.DefaultScheme = NopAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = NopAuthenticationDefaults.ExternalAuthenticationScheme;
             });
 
             //add main cookie authentication
-            authenticationBuilder.AddCookie(NopCookieAuthenticationDefaults.AuthenticationScheme, options =>
+            authenticationBuilder.AddCookie(NopAuthenticationDefaults.AuthenticationScheme, options =>
             {
-                options.Cookie.Name = NopCookieAuthenticationDefaults.CookiePrefix + NopCookieAuthenticationDefaults.AuthenticationScheme;
+                options.Cookie.Name = $"{NopCookieDefaults.Prefix}{NopCookieDefaults.AuthenticationCookie}";
                 options.Cookie.HttpOnly = true;
-                options.LoginPath = NopCookieAuthenticationDefaults.LoginPath;
-                options.AccessDeniedPath = NopCookieAuthenticationDefaults.AccessDeniedPath;
+                options.LoginPath = NopAuthenticationDefaults.LoginPath;
+                options.AccessDeniedPath = NopAuthenticationDefaults.AccessDeniedPath;
 
                 //whether to allow the use of authentication cookies from SSL protected page on the other store pages which are not
                 options.Cookie.SecurePolicy = DataSettingsManager.DatabaseIsInstalled && EngineContext.Current.Resolve<SecuritySettings>().ForceSslForAllPages
@@ -210,18 +211,18 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
             });
 
             //add external authentication
-            authenticationBuilder.AddCookie(NopCookieAuthenticationDefaults.ExternalAuthenticationScheme, options =>
+            authenticationBuilder.AddCookie(NopAuthenticationDefaults.ExternalAuthenticationScheme, options =>
             {
-                options.Cookie.Name = NopCookieAuthenticationDefaults.CookiePrefix + NopCookieAuthenticationDefaults.ExternalAuthenticationScheme;
+                options.Cookie.Name = $"{NopCookieDefaults.Prefix}{NopCookieDefaults.ExternalAuthenticationCookie}";
                 options.Cookie.HttpOnly = true;
-                options.LoginPath = NopCookieAuthenticationDefaults.LoginPath;
-                options.AccessDeniedPath = NopCookieAuthenticationDefaults.AccessDeniedPath;
+                options.LoginPath = NopAuthenticationDefaults.LoginPath;
+                options.AccessDeniedPath = NopAuthenticationDefaults.AccessDeniedPath;
 
                 //whether to allow the use of authentication cookies from SSL protected page on the other store pages which are not
                 options.Cookie.SecurePolicy = DataSettingsManager.DatabaseIsInstalled && EngineContext.Current.Resolve<SecuritySettings>().ForceSslForAllPages
                     ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.None;
             });
-            
+
             //register and configure external authentication plugins now
             var typeFinder = new WebAppTypeFinder();
             var externalAuthConfigurations = typeFinder.FindClassesOfType<IExternalAuthenticationRegistrar>();
@@ -243,8 +244,27 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
             //add basic MVC feature
             var mvcBuilder = services.AddMvc();
 
-            //use session temp data provider
-            mvcBuilder.AddSessionStateTempDataProvider();
+            //sets the default value of settings on MvcOptions to match the behavior of asp.net core mvc 2.1
+            mvcBuilder.SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            var nopConfig = services.BuildServiceProvider().GetRequiredService<NopConfig>();
+            if (nopConfig.UseSessionStateTempDataProvider)
+            {
+                //use session-based temp data provider
+                mvcBuilder.AddSessionStateTempDataProvider();
+            }
+            else
+            {
+                //use cookie-based temp data provider
+                mvcBuilder.AddCookieTempDataProvider(options =>
+                {
+                    options.Cookie.Name = $"{NopCookieDefaults.Prefix}{NopCookieDefaults.TempDataCookie}";
+
+                    //whether to allow the use of cookies from SSL protected page on the other store pages which are not
+                    options.Cookie.SecurePolicy = DataSettingsManager.DatabaseIsInstalled && EngineContext.Current.Resolve<SecuritySettings>().ForceSslForAllPages
+                        ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.None;
+                });
+            }
 
             //MVC now serializes JSON with camel case names by default, use this code to avoid it
             mvcBuilder.AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
@@ -273,7 +293,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
         public static void AddNopRedirectResultExecutor(this IServiceCollection services)
         {
             //we use custom redirect executor as a workaround to allow using non-ASCII characters in redirect URLs
-            services.AddSingleton<RedirectResultExecutor, NopRedirectResultExecutor>();
+            services.AddSingleton<IActionResultExecutor<RedirectResult>, NopRedirectResultExecutor>();
         }
 
         /// <summary>
@@ -284,13 +304,7 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
         {
             services.AddDbContext<NopObjectContext>(optionsBuilder =>
             {
-                var dataSettings = DataSettingsManager.LoadSettings();
-                if (!dataSettings?.IsValid ?? true)
-                    return;
-
-                optionsBuilder
-                    .UseLazyLoadingProxies()
-                    .UseSqlServer(dataSettings.DataConnectionString);
+                optionsBuilder.UseSqlServerWithLazyLoading(services);
             });
         }
 
@@ -310,14 +324,14 @@ namespace Nop.Web.Framework.Infrastructure.Extensions
                 (miniProfilerOptions.Storage as MemoryCacheStorage).CacheDuration = TimeSpan.FromMinutes(60);
 
                 //whether MiniProfiler should be displayed
-                miniProfilerOptions.ShouldProfile = request => 
+                miniProfilerOptions.ShouldProfile = request =>
                     EngineContext.Current.Resolve<StoreInformationSettings>().DisplayMiniProfilerInPublicStore;
-                
+
                 //determine who can access the MiniProfiler results
-                miniProfilerOptions.ResultsAuthorize = request => 
+                miniProfilerOptions.ResultsAuthorize = request =>
                     !EngineContext.Current.Resolve<StoreInformationSettings>().DisplayMiniProfilerForAdminOnly ||
                     EngineContext.Current.Resolve<IPermissionService>().Authorize(StandardPermissionProvider.AccessAdminPanel);
-            });
+            }).AddEntityFramework();
         }
     }
 }

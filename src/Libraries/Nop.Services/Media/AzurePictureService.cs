@@ -11,8 +11,10 @@ using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Media;
 using Nop.Core.Infrastructure;
 using Nop.Data;
+using Nop.Services.Catalog;
 using Nop.Services.Configuration;
 using Nop.Services.Events;
+using Nop.Services.Seo;
 
 namespace Nop.Services.Media
 {
@@ -21,26 +23,10 @@ namespace Nop.Services.Media
     /// </summary>
     public partial class AzurePictureService : PictureService
     {
-        #region Constants
-
-        /// <summary>
-        /// Key to cache whether thumb exists
-        /// </summary>
-        /// <remarks>
-        /// {0} : thumb file name
-        /// </remarks>
-        private const string THUMB_EXISTS_KEY = "Nop.azure.thumb.exists-{0}";
-        
-        /// <summary>
-        /// Key pattern to clear cache
-        /// </summary>
-        private const string THUMBS_PATTERN_KEY = "Nop.azure.thumb";
-
-        #endregion
-
         #region Fields
-
+        
         private static CloudBlobContainer _container;
+
         private readonly IStaticCacheManager _cacheManager;
         private readonly MediaSettings _mediaSettings;
         private readonly NopConfig _config;
@@ -49,43 +35,32 @@ namespace Nop.Services.Media
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="pictureRepository">Picture repository</param>
-        /// <param name="productPictureRepository">Product picture repository</param>
-        /// <param name="settingService">Setting service</param>
-        /// <param name="webHelper">Web helper</param>
-        /// <param name="dbContext">Database context</param>
-        /// <param name="eventPublisher">Event publisher</param>
-        /// <param name="cacheManager">Cache manager</param>
-        /// <param name="mediaSettings">Media settings</param>
-        /// <param name="config">Config</param>
-        /// <param name="dataProvider">Data provider</param>
-        /// <param name="fileProvider">File provider</param>
-        /// <param name="pictureBinaryRepository">PictureBinary repository</param>
-        public AzurePictureService(IRepository<Picture> pictureRepository,
-            IRepository<ProductPicture> productPictureRepository,
-            ISettingService settingService,
-            IWebHelper webHelper,
+        public AzurePictureService(IDataProvider dataProvider,
             IDbContext dbContext,
             IEventPublisher eventPublisher,
-            IStaticCacheManager cacheManager,
-            MediaSettings mediaSettings,
-            NopConfig config,
-            IDataProvider dataProvider,
             INopFileProvider fileProvider,
-            IRepository<PictureBinary> pictureBinaryRepository)
-            : base(pictureRepository,
-                productPictureRepository,
-                settingService,
-                webHelper,
-                dbContext,
-                eventPublisher,
-                mediaSettings,
-                dataProvider,
-                fileProvider,
-                pictureBinaryRepository)
+            IProductAttributeParser productAttributeParser,
+            IRepository<Picture> pictureRepository,
+            IRepository<PictureBinary> pictureBinaryRepository,
+            IRepository<ProductPicture> productPictureRepository,
+            ISettingService settingService,
+            IStaticCacheManager cacheManager,
+            IUrlRecordService urlRecordService,
+            IWebHelper webHelper,
+            MediaSettings mediaSettings,
+            NopConfig config)
+            : base(dataProvider,
+                  dbContext,
+                  eventPublisher,
+                  fileProvider,
+                  productAttributeParser,
+                  pictureRepository,
+                  pictureBinaryRepository,
+                  productPictureRepository,
+                  settingService,
+                  urlRecordService,
+                  webHelper,
+                  mediaSettings)
         {
             this._cacheManager = cacheManager;
             this._mediaSettings = mediaSettings;
@@ -206,7 +181,7 @@ namespace Nop.Services.Media
             }
             while (continuationToken != null);
 
-            _cacheManager.RemoveByPattern(THUMBS_PATTERN_KEY);
+            _cacheManager.RemoveByPattern(NopMediaDefaults.ThumbsPatternCacheKey);
         }
 
         /// <summary>
@@ -219,7 +194,7 @@ namespace Nop.Services.Media
         {
             try
             {
-                var key = string.Format(THUMB_EXISTS_KEY, thumbFileName);
+                var key = string.Format(NopMediaDefaults.ThumbExistsCacheKey, thumbFileName);
                 return await _cacheManager.Get(key, async () =>
                 {
                     //GetBlockBlobReference doesn't need to be async since it doesn't contact the server yet
@@ -228,7 +203,10 @@ namespace Nop.Services.Media
                     return await blockBlob.ExistsAsync();
                 });
             }
-            catch { return false; }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -253,7 +231,7 @@ namespace Nop.Services.Media
 
             await blockBlob.UploadFromByteArrayAsync(binary, 0, binary.Length);
 
-            _cacheManager.RemoveByPattern(THUMBS_PATTERN_KEY);
+            _cacheManager.RemoveByPattern(NopMediaDefaults.ThumbsPatternCacheKey);
         }
 
         #endregion
