@@ -31,7 +31,7 @@
     <div class="content">
         <div class="form-horizontal">
             <div class="panel-group">
-                <div class="panel panel-default">
+                <div class="panel panel-default panel-search">
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-6">
@@ -179,13 +179,6 @@
                                     return false;
                                 });
 
-                                $("#@Html.IdFor(model => model.Message)").keydown(function(event) {
-                                    if (event.keyCode == 13) {
-                                        $("#search-log").click();
-                                        return false;
-                                    }
-                                });
-
                                 //"delete selected" button
                                 $("#delete-selected-action-confirmation-submit-button").bind("click", function () {
                                     var postData = {
@@ -207,7 +200,8 @@
                                             selectedIds = [];
                                         },
                                         error: function (xhr, ajaxOptions, thrownError) {
-                                            alert(thrownError);
+                                            $('#deleteSelectedFailed-info').html(thrownError);
+                                            $("#deleteSelectedFailed").click();
                                         },
                                         traditional: true
                                     });
@@ -261,3 +255,4 @@
         </div>
     </div>
 </form>
+<nop-alert asp-alert-id="deleteSelectedFailed" />

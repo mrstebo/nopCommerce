@@ -454,11 +454,7 @@ namespace Nop.Web.Areas.Admin.Factories
             var model = new WarehouseListModel
             {
                 //fill in model values from the entity
-                Data = warehouses.PaginationByRequestModel(searchModel).Select(warehouse => new WarehouseModel
-                {
-                    Id = warehouse.Id,
-                    Name = warehouse.Name
-                }),
+                Data = warehouses.PaginationByRequestModel(searchModel).Select(warehouse => warehouse.ToModel<WarehouseModel>()),
                 Total = warehouses.Count
             };
 
@@ -477,12 +473,10 @@ namespace Nop.Web.Areas.Admin.Factories
             if (warehouse != null)
             {
                 //fill in model values from the entity
-                model = model ?? new WarehouseModel
+                if (model == null)
                 {
-                    Id = warehouse.Id,
-                    Name = warehouse.Name,
-                    AdminComment = warehouse.AdminComment
-                };
+                    model = warehouse.ToModel<WarehouseModel>();
+                }
             }
 
             //prepare address model
@@ -505,7 +499,13 @@ namespace Nop.Web.Areas.Admin.Factories
                 throw new ArgumentNullException(nameof(model));
 
             var countries = _countryService.GetAllCountries(showHidden: true);
-            model.AvailableCountries = countries.Select(country => country.ToModel<CountryModel>()).ToList();
+            model.AvailableCountries = countries.Select(country =>
+            {
+                var countryModel = country.ToModel<CountryModel>();
+                countryModel.NumberOfStates = country.StateProvinces?.Count ?? 0;
+
+                return countryModel;
+            }).ToList();
 
             foreach (var shippingMethod in _shippingService.GetAllShippingMethods())
             {

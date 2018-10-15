@@ -747,6 +747,7 @@ namespace Nop.Web.Areas.Admin.Factories
                     productModel.FullDescription = string.Empty;
 
                     //fill in additional values (not existing in the entity)
+                    productModel.SeName = _urlRecordService.GetSeName(product, 0, true, false);
                     var defaultProductPicture = _pictureService.GetPicturesByProductId(product.Id, 1).FirstOrDefault();
                     productModel.PictureThumbnailUrl = _pictureService.GetPictureUrl(defaultProductPicture, 75);
                     productModel.ProductTypeName = _localizationService.GetLocalizedEnum(product.ProductType);
@@ -775,7 +776,11 @@ namespace Nop.Web.Areas.Admin.Factories
             if (product != null)
             {
                 //fill in model values from the entity
-                model = model ?? product.ToModel<ProductModel>();
+                if (model == null)
+                {
+                    model = product.ToModel<ProductModel>();
+                    model.SeName = _urlRecordService.GetSeName(product, 0, true, false);
+                }
 
                 var parentGroupedProduct = _productService.GetProductById(product.ParentGroupedProductId);
                 if (parentGroupedProduct != null)
@@ -999,7 +1004,13 @@ namespace Nop.Web.Areas.Admin.Factories
             var model = new AddRequiredProductListModel
             {
                 //fill in model values from the entity
-                Data = products.Select(product => product.ToModel<ProductModel>()),
+                Data = products.Select(product =>
+                {
+                    var productModel = product.ToModel<ProductModel>();
+                    productModel.SeName = _urlRecordService.GetSeName(product, 0, true, false);
+
+                    return productModel;
+                }),
                 Total = products.TotalCount
             };
 
@@ -1029,12 +1040,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = relatedProducts.PaginationByRequestModel(searchModel).Select(relatedProduct =>
                 {
                     //fill in model values from the entity
-                    var relatedProductModel = new RelatedProductModel
-                    {
-                        Id = relatedProduct.Id,
-                        ProductId2 = relatedProduct.ProductId2,
-                        DisplayOrder = relatedProduct.DisplayOrder
-                    };
+                    var relatedProductModel = relatedProduct.ToModel<RelatedProductModel>();
 
                     //fill in additional values (not existing in the entity)
                     relatedProductModel.Product2Name = _productService.GetProductById(relatedProduct.ProductId2)?.Name;
@@ -1108,7 +1114,13 @@ namespace Nop.Web.Areas.Admin.Factories
             var model = new AddRelatedProductListModel
             {
                 //fill in model values from the entity
-                Data = products.Select(product => product.ToModel<ProductModel>()),
+                Data = products.Select(product =>
+                {
+                    var productModel = product.ToModel<ProductModel>();
+                    productModel.SeName = _urlRecordService.GetSeName(product, 0, true, false);
+
+                    return productModel;
+                }),
                 Total = products.TotalCount
             };
 
@@ -1216,7 +1228,13 @@ namespace Nop.Web.Areas.Admin.Factories
             var model = new AddCrossSellProductListModel
             {
                 //fill in model values from the entity
-                Data = products.Select(product => product.ToModel<ProductModel>()),
+                Data = products.Select(product =>
+                {
+                    var productModel = product.ToModel<ProductModel>();
+                    productModel.SeName = _urlRecordService.GetSeName(product, 0, true, false);
+
+                    return productModel;
+                }),
                 Total = products.TotalCount
             };
 
@@ -1246,11 +1264,12 @@ namespace Nop.Web.Areas.Admin.Factories
             var model = new AssociatedProductListModel
             {
                 //fill in model values from the entity
-                Data = associatedProducts.PaginationByRequestModel(searchModel).Select(associatedProduct => new AssociatedProductModel
+                Data = associatedProducts.PaginationByRequestModel(searchModel).Select(associatedProduct =>
                 {
-                    Id = associatedProduct.Id,
-                    ProductName = associatedProduct.Name,
-                    DisplayOrder = associatedProduct.DisplayOrder
+                    var associatedProductModel = associatedProduct.ToModel<AssociatedProductModel>();
+                    associatedProductModel.ProductName = associatedProduct.Name;
+
+                    return associatedProductModel;
                 }),
                 Total = associatedProducts.Count
             };
@@ -1324,6 +1343,7 @@ namespace Nop.Web.Areas.Admin.Factories
                     var productModel = product.ToModel<ProductModel>();
 
                     //fill in additional values (not existing in the entity)
+                    productModel.SeName = _urlRecordService.GetSeName(product, 0, true, false);
                     var parentGroupedProduct = _productService.GetProductById(product.ParentGroupedProductId);
                     if (parentGroupedProduct == null)
                         return productModel;
@@ -1362,13 +1382,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = productPictures.PaginationByRequestModel(searchModel).Select(productPicture =>
                 {
                     //fill in model values from the entity
-                    var productPictureModel = new ProductPictureModel
-                    {
-                        Id = productPicture.Id,
-                        ProductId = productPicture.ProductId,
-                        PictureId = productPicture.PictureId,
-                        DisplayOrder = productPicture.DisplayOrder
-                    };
+                    var productPictureModel = productPicture.ToModel<ProductPictureModel>();
 
                     //fill in additional values (not existing in the entity)
                     var picture = _pictureService.GetPictureById(productPicture.PictureId)
@@ -1410,19 +1424,13 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = productSpecificationAttributes.PaginationByRequestModel(searchModel).Select(attribute =>
                 {
                     //fill in model values from the entity
-                    var productSpecificationAttributeModel = new ProductSpecificationAttributeModel
-                    {
-                        Id = attribute.Id,
-                        AttributeTypeId = attribute.AttributeTypeId,
-                        AllowFiltering = attribute.AllowFiltering,
-                        ShowOnProductPage = attribute.ShowOnProductPage,
-                        DisplayOrder = attribute.DisplayOrder
-                    };
+                    var productSpecificationAttributeModel = attribute.ToModel<ProductSpecificationAttributeModel>();
 
                     //fill in additional values (not existing in the entity)
                     productSpecificationAttributeModel.AttributeTypeName = _localizationService.GetLocalizedEnum(attribute.AttributeType);
                     productSpecificationAttributeModel.AttributeId = attribute.SpecificationAttributeOption.SpecificationAttribute.Id;
                     productSpecificationAttributeModel.AttributeName = attribute.SpecificationAttributeOption.SpecificationAttribute.Name;
+
                     switch (attribute.AttributeType)
                     {
                         case SpecificationAttributeType.Option:
@@ -1484,12 +1492,8 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = productTags.PaginationByRequestModel(searchModel).Select(tag =>
                 {
                     //fill in model values from the entity
-                    var productTagModel = new ProductTagModel
-                    {
-                        Id = tag.Id,
-                        Name = tag.Name
-                    };
-
+                    var productTagModel = tag.ToModel<ProductTagModel>();
+                    
                     //fill in additional values (not existing in the entity)
                     productTagModel.ProductCount = _productTagService.GetProductCount(tag.Id, storeId: 0);
 
@@ -1515,12 +1519,11 @@ namespace Nop.Web.Areas.Admin.Factories
             if (productTag != null)
             {
                 //fill in model values from the entity
-                model = model ?? new ProductTagModel
+                if (model == null)
                 {
-                    Id = productTag.Id,
-                    Name = productTag.Name
-                };
-
+                    model = productTag.ToModel<ProductTagModel>();
+                }
+               
                 model.ProductCount = _productTagService.GetProductCount(productTag.Id, storeId: 0);
 
                 //define localized model configuration action
@@ -1635,16 +1638,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = products.Select(product =>
                 {
                     //fill in model values from the entity
-                    var productModel = new BulkEditProductModel
-                    {
-                        Id = product.Id,
-                        Name = product.Name,
-                        Sku = product.Sku,
-                        OldPrice = product.OldPrice,
-                        Price = product.Price,
-                        StockQuantity = product.StockQuantity,
-                        Published = product.Published
-                    };
+                    var productModel = product.ToModel<BulkEditProductModel>();
 
                     //fill in additional values (not existing in the entity)
                     productModel.ManageInventoryMethod = _localizationService.GetLocalizedEnum(product.ManageInventoryMethod);
@@ -1685,22 +1679,13 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = tierPrices.PaginationByRequestModel(searchModel).Select(price =>
                 {
                     //fill in model values from the entity
-                    var tierPriceModel = new TierPriceModel
-                    {
-                        Id = price.Id,
-                        StoreId = price.StoreId,
-                        ProductId = price.ProductId,
-                        CustomerRoleId = price.CustomerRoleId ?? 0,
-                        Quantity = price.Quantity,
-                        Price = price.Price,
-                        StartDateTimeUtc = price.StartDateTimeUtc,
-                        EndDateTimeUtc = price.EndDateTimeUtc
-                    };
+                    var tierPriceModel = price.ToModel<TierPriceModel>();
 
-                    //fill in additional values (not existing in the entity)
+                    //fill in additional values (not existing in the entity)   
                     tierPriceModel.Store = price.StoreId > 0
                         ? (_storeService.GetStoreById(price.StoreId)?.Name ?? "Deleted")
                         : _localizationService.GetResource("Admin.Catalog.Products.TierPrices.Fields.Store.All");
+                    tierPriceModel.CustomerRoleId = price.CustomerRoleId ?? 0;
                     tierPriceModel.CustomerRole = price.CustomerRoleId.HasValue
                         ? _customerService.GetCustomerRoleById(price.CustomerRoleId.Value).Name
                         : _localizationService.GetResource("Admin.Catalog.Products.TierPrices.Fields.CustomerRole.All");
@@ -1730,16 +1715,10 @@ namespace Nop.Web.Areas.Admin.Factories
             if (tierPrice != null)
             {
                 //fill in model values from the entity
-                model = model ?? new TierPriceModel
+                if (model == null)
                 {
-                    Id = tierPrice.Id,
-                    CustomerRoleId = tierPrice.CustomerRoleId ?? 0,
-                    StoreId = tierPrice.StoreId,
-                    Quantity = tierPrice.Quantity,
-                    Price = tierPrice.Price,
-                    StartDateTimeUtc = tierPrice.StartDateTimeUtc,
-                    EndDateTimeUtc = tierPrice.EndDateTimeUtc
-                };
+                    model = tierPrice.ToModel<TierPriceModel>(); 
+                }
             }
 
             //prepare available stores
@@ -1776,13 +1755,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = stockQuantityHistory.Select(historyEntry =>
                 {
                     //fill in model values from the entity
-                    var stockQuantityHistoryModel = new StockQuantityHistoryModel
-                    {
-                        Id = historyEntry.Id,
-                        QuantityAdjustment = historyEntry.QuantityAdjustment,
-                        StockQuantity = historyEntry.StockQuantity,
-                        Message = historyEntry.Message
-                    };
+                    var stockQuantityHistoryModel = historyEntry.ToModel<StockQuantityHistoryModel>();
 
                     //convert dates to the user time
                     stockQuantityHistoryModel.CreatedOn = _dateTimeHelper.ConvertToUserTime(historyEntry.CreatedOnUtc, DateTimeKind.Utc);
@@ -1831,19 +1804,10 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = productAttributeMappings.PaginationByRequestModel(searchModel).Select(attributeMapping =>
                 {
                     //fill in model values from the entity
-                    var productAttributeMappingModel = new ProductAttributeMappingModel
-                    {
-                        Id = attributeMapping.Id,
-                        ProductId = attributeMapping.ProductId,
-                        TextPrompt = attributeMapping.TextPrompt,
-                        IsRequired = attributeMapping.IsRequired,
-                        DisplayOrder = attributeMapping.DisplayOrder,
-                        AttributeControlTypeId = attributeMapping.AttributeControlTypeId,
-                        ProductAttributeId = attributeMapping.ProductAttributeId,
-                        ConditionString = string.Empty
-                    };
+                    var productAttributeMappingModel = attributeMapping.ToModel<ProductAttributeMappingModel>();
 
                     //fill in additional values (not existing in the entity)
+                    productAttributeMappingModel.ConditionString = string.Empty;
                     productAttributeMappingModel.ValidationRulesString = PrepareProductAttributeMappingValidationRulesString(attributeMapping);
                     productAttributeMappingModel.ProductAttribute = _productAttributeService
                         .GetProductAttributeById(attributeMapping.ProductAttributeId)?.Name;
@@ -1963,24 +1927,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = productAttributeValues.PaginationByRequestModel(searchModel).Select(value =>
                 {
                     //fill in model values from the entity
-                    var productAttributeValueModel = new ProductAttributeValueModel
-                    {
-                        Id = value.Id,
-                        ProductAttributeMappingId = value.ProductAttributeMappingId,
-                        AttributeValueTypeId = value.AttributeValueTypeId,
-                        AssociatedProductId = value.AssociatedProductId,
-                        ColorSquaresRgb = value.ColorSquaresRgb,
-                        ImageSquaresPictureId = value.ImageSquaresPictureId,
-                        PriceAdjustment = value.PriceAdjustment,
-                        PriceAdjustmentUsePercentage = value.PriceAdjustmentUsePercentage,
-                        WeightAdjustment = value.WeightAdjustment,
-                        Cost = value.Cost,
-                        CustomerEntersQty = value.CustomerEntersQty,
-                        Quantity = value.Quantity,
-                        IsPreSelected = value.IsPreSelected,
-                        DisplayOrder = value.DisplayOrder,
-                        PictureId = value.PictureId
-                    };
+                    var productAttributeValueModel = value.ToModel<ProductAttributeValueModel>();
 
                     //fill in additional values (not existing in the entity)
                     productAttributeValueModel.AttributeValueTypeName = _localizationService.GetLocalizedEnum(value.AttributeValueType);
@@ -2155,7 +2102,13 @@ namespace Nop.Web.Areas.Admin.Factories
             var model = new AssociateProductToAttributeValueListModel
             {
                 //fill in model values from the entity
-                Data = products.Select(product => product.ToModel<ProductModel>()),
+                Data = products.Select(product =>
+                {
+                    var productModel = product.ToModel<ProductModel>();
+                    productModel.SeName = _urlRecordService.GetSeName(product, 0, true, false);
+
+                    return productModel;
+                }),
                 Total = products.TotalCount
             };
 
@@ -2186,19 +2139,7 @@ namespace Nop.Web.Areas.Admin.Factories
                 Data = productAttributeCombinations.PaginationByRequestModel(searchModel).Select(combination =>
                 {
                     //fill in model values from the entity
-                    var productAttributeCombinationModel = new ProductAttributeCombinationModel
-                    {
-                        Id = combination.Id,
-                        ProductId = combination.ProductId,
-                        StockQuantity = combination.StockQuantity,
-                        AllowOutOfStockOrders = combination.AllowOutOfStockOrders,
-                        Sku = combination.Sku,
-                        ManufacturerPartNumber = combination.ManufacturerPartNumber,
-                        Gtin = combination.Gtin,
-                        OverriddenPrice = combination.OverriddenPrice,
-                        NotifyAdminForQuantityBelow = combination.NotifyAdminForQuantityBelow,
-                        PictureId = combination.PictureId
-                    };
+                    var productAttributeCombinationModel = combination.ToModel<ProductAttributeCombinationModel>();
 
                     //fill in additional values (not existing in the entity)
                     productAttributeCombinationModel.AttributesXml = _productAttributeFormatter

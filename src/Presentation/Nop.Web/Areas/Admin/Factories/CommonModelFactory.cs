@@ -805,9 +805,8 @@ namespace Nop.Web.Areas.Admin.Factories
                     //fill in model values from the entity
                     var urlRecordModel = urlRecord.ToModel<UrlRecordModel>();
 
-                    urlRecordModel.Name = urlRecord.Slug;
-
                     //fill in additional values (not existing in the entity)
+                    urlRecordModel.Name = urlRecord.Slug;
                     urlRecordModel.Language = urlRecord.LanguageId == 0
                         ? _localizationService.GetResource("Admin.System.SeNames.Language.Standard")
                         : _languageService.GetLanguageById(urlRecord.LanguageId)?.Name ?? "Unknown";

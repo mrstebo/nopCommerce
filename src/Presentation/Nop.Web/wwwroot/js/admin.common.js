@@ -22,6 +22,21 @@ $(document).ready(function () {
     $('.multi-store-override-option').each(function (k, v) {
         checkOverriddenStoreValue(v, $(v).attr('data-for-input-selector'));
     });
+
+    //we must intercept all events of pressing the Enter button in the search bar to be sure that the input focus remains in the context of the search
+    $("div.panel-search").keypress(function (event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            $("button.btn-search").click();
+            return false;
+        }
+    });
+
+    //pressing Enter in the tablex should not lead to any action
+    $("div[id$='-grid']").keypress(function (event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            return false;
+        }
+    });
 });
 
 function checkAllOverriddenStoreValue(item) {
@@ -122,7 +137,7 @@ function saveUserPreferences(url, name, value) {
 
 function warningValidation(validationUrl, warningElementName, passedParameters) {
     addAntiForgeryToken(passedParameters);
-    var element = $('[name="' + warningElementName + '"]');
+    var element = $('[data-valmsg-for="' + warningElementName + '"]');
 
     var messageElement = element.siblings('.field-validation-custom');
     if (messageElement.length == 0) {
