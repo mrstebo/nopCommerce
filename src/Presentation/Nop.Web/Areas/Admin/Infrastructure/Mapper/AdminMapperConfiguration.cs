@@ -401,7 +401,6 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
             //products
             CreateMap<Product, ProductModel>()
                 .ForMember(model => model.AddPictureModel, options => options.Ignore())
-                .ForMember(model => model.AddSpecificationAttributeModel, options => options.Ignore())
                 .ForMember(model => model.AssociatedProductSearchModel, options => options.Ignore())
                 .ForMember(model => model.AssociatedToProductId, options => options.Ignore())
                 .ForMember(model => model.AssociatedToProductName, options => options.Ignore())
@@ -420,6 +419,7 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
                 .ForMember(model => model.CopyProductModel, options => options.Ignore())
                 .ForMember(model => model.CreatedOn, options => options.Ignore())
                 .ForMember(model => model.CrossSellProductSearchModel, options => options.Ignore())
+                .ForMember(model => model.HasAvailableSpecificationAttributes, options => options.Ignore())
                 .ForMember(model => model.IsLoggedInAsVendor, options => options.Ignore())
                 .ForMember(model => model.LastStockQuantity, options => options.Ignore())
                 .ForMember(model => model.PictureThumbnailUrl, options => options.Ignore())
@@ -550,13 +550,28 @@ namespace Nop.Web.Areas.Admin.Infrastructure.Mapper
                 .ForMember(model => model.ProductId, options => options.Ignore())
                 .ForMember(model => model.ProductName, options => options.Ignore());
 
-
             CreateMap<ProductSpecificationAttribute, ProductSpecificationAttributeModel>()
                 .ForMember(model => model.AttributeTypeName, options => options.Ignore())
                 .ForMember(model => model.ValueRaw, options => options.Ignore())
                 .ForMember(model => model.AttributeId, options => options.Ignore())
                 .ForMember(model => model.AttributeName, options => options.Ignore())
                 .ForMember(model => model.SpecificationAttributeOptionId, options => options.Ignore());
+
+            CreateMap<ProductSpecificationAttribute, AddSpecificationAttributeModel>()
+                .ForMember(entity => entity.SpecificationId, options => options.Ignore())
+                .ForMember(entity => entity.AttributeTypeName, options => options.Ignore())
+                .ForMember(entity => entity.AttributeId, options => options.Ignore())
+                .ForMember(entity => entity.AttributeName, options => options.Ignore())
+                .ForMember(entity => entity.ValueRaw, options => options.Ignore())
+                .ForMember(entity => entity.Value, options => options.Ignore())
+                .ForMember(entity => entity.AvailableOptions, options => options.Ignore())
+                .ForMember(entity => entity.AvailableAttributes, options => options.Ignore());
+
+            CreateMap<AddSpecificationAttributeModel, ProductSpecificationAttribute>()
+                .ForMember(model => model.CustomValue, options => options.Ignore())
+                .ForMember(model => model.Product, options => options.Ignore())
+                .ForMember(model => model.SpecificationAttributeOption, options => options.Ignore())
+                .ForMember(model => model.AttributeType, options => options.Ignore());
 
             CreateMap<ProductTag, ProductTagModel>()
                .ForMember(model => model.ProductCount, options => options.Ignore());
